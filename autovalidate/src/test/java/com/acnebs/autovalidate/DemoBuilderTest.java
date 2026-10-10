@@ -1,12 +1,12 @@
 package com.acnebs.autovalidate;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import javax.validation.*;
+import jakarta.validation.*;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 
 public class DemoBuilderTest {
@@ -22,7 +22,7 @@ public class DemoBuilderTest {
         // at this point the object is de-facto valid but this fact has not been checked yet
 
         Set<ConstraintViolation<DemoBuilder>> violations = validate(demo);
-        assertEquals("Object should be valid.", 0, violations.size());
+        assertEquals(0, violations.size(), "Object should be valid.");
 
         // Fortunately, making it INVALID again is no possible...
         // let's "clone" it instead:
@@ -32,11 +32,11 @@ public class DemoBuilderTest {
         assertNotSame(demo, demo2);
 
         violations = validate(demo2);
-        assertEquals("Object 2 should have 1 error because the email address is wrong.", 1, violations.size());
+        assertEquals(1, violations.size(), "Object 2 should have 1 error because the email address is wrong.");
 
 
         violations = validate(demo);
-        assertEquals("Object 1 should still be valid.", 0, violations.size());
+        assertEquals(0, violations.size(), "Object 1 should still be valid.");
 
         // This is better, however, the object's data integrity relies on the fact that some process
         // OUTSIDE of the object has taken care of validation.

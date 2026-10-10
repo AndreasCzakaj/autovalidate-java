@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.acnebs</groupId>
@@ -24,35 +24,30 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <aspectj_version>1.8.9</aspectj_version>
-        <lombok_version>1.16.16</lombok_version>
-        <validation-api_version>1.1.0.Final</validation-api_version>
-        <hibernate-validator_version>5.2.2.Final</hibernate-validator_version>
-        <javax.el-api_version>2.2.4</javax.el-api_version>
-        <junit4_version>4.8.2</junit4_version>
-        <java_version>1.8</java_version>
+        <aspectj_version>1.9.25.1</aspectj_version>
+        <lombok_version>1.18.48</lombok_version>
+        <validation-api_version>3.1.1</validation-api_version>
+        <hibernate-validator_version>9.1.4.Final</hibernate-validator_version>
+        <expressly_version>6.0.0</expressly_version>
+        <junit_version>6.1.3</junit_version>
+        <java_version>21</java_version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok_version}</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
             <version>${validation-api_version}</version>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate-validator_version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.el</groupId>
-            <artifactId>javax.el-api</artifactId>
-            <version>${javax.el-api_version}</version>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
+            <version>${expressly_version}</version>
         </dependency>
 
         <dependency>
@@ -67,9 +62,15 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit4_version}</version>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok_version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit_version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -79,21 +80,42 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
+                <version>3.16.0</version>
                 <configuration>
-                    <source>${java_version}</source>
-                    <target>${java_version}</target>
+                    <release>${java_version}</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok_version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
 
+            <!-- Exposes the path of every dependency as a property named groupId:artifactId:type,
+                 e.g. ${org.aspectj:aspectjweaver:jar} -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.11.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- The "trick": run the tests with the AspectJ weaver as a Java agent (load-time weaving).
+                 The weaver picks up the aspect from META-INF/aop.xml. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.9</version>
+                <version>3.6.0</version>
                 <configuration>
-                    <argLine>
-                        -javaagent:${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj_version}/aspectjweaver-${aspectj_version}.jar
-                    </argLine>
+                    <argLine>-javaagent:${org.aspectj:aspectjweaver:jar}</argLine>
                 </configuration>
             </plugin>
         </plugins>

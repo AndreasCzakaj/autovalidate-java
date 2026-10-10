@@ -1,12 +1,12 @@
 package com.acnebs.autovalidate;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import javax.validation.*;
+import jakarta.validation.*;
 
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class DemoBeanTest {
@@ -29,11 +29,11 @@ public class DemoBeanTest {
         final Validator validator = validatorFactory.getValidator();
 
         Set<ConstraintViolation<DemoBean>> violations = validator.validate(demo);
-        assertEquals("Object should be valid.", 0, violations.size());
+        assertEquals(0, violations.size(), "Object should be valid.");
 
         demo.setEmail("joey_at_ramones.com");
         violations = validator.validate(demo);
-        assertEquals("Object should have 1 error because the email address is wrong.", 1, violations.size());
+        assertEquals(1, violations.size(), "Object should have 1 error because the email address is wrong.");
         // but wait a second: wasn't that thing valid earlier? how could someone make it invalid again?
     }
 }

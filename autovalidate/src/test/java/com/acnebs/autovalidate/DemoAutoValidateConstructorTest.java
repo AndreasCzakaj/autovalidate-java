@@ -1,11 +1,11 @@
 package com.acnebs.autovalidate;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import javax.validation.*;
+import jakarta.validation.*;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class DemoAutoValidateConstructorTest {
@@ -22,7 +22,7 @@ public class DemoAutoValidateConstructorTest {
 
         // let's check again manually:
         Set<ConstraintViolation<DemoAutovalidateConstructor>> violations = validate(demo);
-        assertEquals("Object should be valid.", 0, violations.size());
+        assertEquals(0, violations.size(), "Object should be valid.");
 
         // Fortunately, making it INVALID again is no possible...
         // let's "clone" it instead:
@@ -34,7 +34,7 @@ public class DemoAutoValidateConstructorTest {
         }
         catch (ConstraintViolationException e) {
             final Set<ConstraintViolation<?>> violations2 = e.getConstraintViolations();
-            assertEquals("Object should have 1 error because the email address is wrong.", 1, violations2.size());
+            assertEquals(1, violations2.size(), "Object should have 1 error because the email address is wrong.");
         }
 
         // At not point in the process has the object been available in an invalid state.

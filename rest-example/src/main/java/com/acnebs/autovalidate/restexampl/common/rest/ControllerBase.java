@@ -1,29 +1,29 @@
 package com.acnebs.autovalidate.restexampl.common.rest;
 
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
+import tools.jackson.databind.json.JsonMapper;
 import org.springframework.hateoas.*;
 import org.springframework.http.HttpEntity;
 
 import java.util.Optional;
 import java.util.function.Function;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 public abstract class ControllerBase {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    static {
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
+    private static final ObjectMapper objectMapper = JsonMapper.builder()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .build();
 
-    private final Function<Object, ? extends ResourceSupport> halResourceFactory;
-    private final Function<ResourceSupport, String> idFactory;
+    private final Function<Object, ? extends RepresentationModel<?>> halResourceFactory;
+    private final Function<RepresentationModel<?>, String> idFactory;
     private final Class<?> resClass;
 
     protected ControllerBase(
-            final Function<Object, ResourceSupport> halResourceFactory,
-            final Function<ResourceSupport, String> idFactory,
+            final Function<Object, RepresentationModel<?>> halResourceFactory,
+            final Function<RepresentationModel<?>, String> idFactory,
             final Class<?> resClass
     ) {
         this.halResourceFactory = halResourceFactory;
@@ -31,7 +31,7 @@ public abstract class ControllerBase {
         this.resClass = resClass;
     }
 
-    protected <T extends ResourceSupport> Optional<T> toHalResource(final Object object) {
+    protected <T extends RepresentationModel<?>> Optional<T> toHalResource(final Object object) {
         return Optional.ofNullable(object)
                 .map(r -> objectMapper.convertValue(r, resClass))
                 .map(halResourceFactory::apply)
@@ -49,6 +49,6 @@ public abstract class ControllerBase {
         return linkTo(getLinkTarget(number)).withRel(rel);
     }
 
-    protected abstract <T extends ResourceSupport> HttpEntity<T> getLinkTarget(final String number);
+    protected abstract <T extends RepresentationModel<?>> HttpEntity<T> getLinkTarget(final String number);
 
 }

@@ -1,7 +1,7 @@
 package com.acnebs.autovalidate;
 
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 
 class DemoBeanPlain {
 

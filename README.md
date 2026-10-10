@@ -86,7 +86,7 @@ For this to be done some code OUTSIDE of the object needs to be executed, e.g.:
 ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
 Validator validator = validatorFactory.getValidator();
 Set<ConstraintViolation<DemoBean>> violations = validator.validate(demo);
-assertEquals("Object should be valid.", 0, violations.size());
+assertEquals(0, violations.size(), "Object should be valid.");
 ```
 
 This means the poor object may declare rules of its validity as much as it wants - but it has no control over it.
@@ -95,7 +95,7 @@ But it gets worse: Now that the object is in a valid state at last, let's break 
 ```java
 demo.setEmail("This is not a valid email address!");
 violations = validator.validate(demo);
-assertEquals("Object should have 1 error because the email address is wrong.", 1, violations.size());
+assertEquals(1, violations.size(), "Object should have 1 error because the email address is wrong.");
 ```
 Oops, a simple, maybe accidental, call of a setter broke the object's validity and no-one ever noticed,
 neither the code that asserted the object's validity a second ago nor the object itself.
@@ -133,13 +133,13 @@ To achieve this, we can use the toBuilder method that Lombok generated for us (@
 final DemoBuilder demo2 = demo.toBuilder()
                 .email("Some broken email address")
                 .build();                           
-assertNotSame("The clone must not be the same instance as the original object.", demo, demo2);
+assertNotSame(demo, demo2, "The clone must not be the same instance as the original object.");
 
 violations = validate(demo); 
-assertEquals("Original object should still be valid.", 0, violations.size());     
+assertEquals(0, violations.size(), "Original object should still be valid.");     
 
 violations = validate(demo2); 
-assertEquals("Object 2 should have 1 error because the email address is wrong.", 1, violations.size());
+assertEquals(1, violations.size(), "Object 2 should have 1 error because the email address is wrong.");
 ```
 
 
@@ -208,7 +208,7 @@ public void test_demo() {
     }
     catch (ConstraintViolationException e) {
         Set<ConstraintViolation<?>> violations = e.getConstraintViolations();
-        assertEquals("Object should have 1 error because the email address is wrong.", 1, violations.size());
+        assertEquals(1, violations.size(), "Object should have 1 error because the email address is wrong.");
     }
 
     // At no point in the process has the object been available in an invalid state.
@@ -220,16 +220,60 @@ public void test_demo() {
 # How it works
 IN THE BACKGROUND, there's an AspectJ Pointcut for every constructor of a class annotated with @AutoValidate.
 (Alternatively, you can annotate a specific constructor with the same annotation.)
-For this Pointcut there's an AOP Advice that calls javax.validation for you right after the constructor has finished
+For this Pointcut there's an AOP Advice that calls jakarta.validation for you right after the constructor has finished
 but before any other code can use the object.
-If the object is invalid then the Advice throws an javax.validation.ConstraintViolationException.
+If the object is invalid then the Advice throws a jakarta.validation.ConstraintViolationException.
 
 All YOU have to do:
 1. Use the @AutoValidate annotation on each class you want to use this feature for, either on the level of the class or the constructor.
-2. Enable AspectJ, e.g. -javaagent:{path_to_aspectjweaver}
+2. Enable AspectJ (see below).
 
 
+# Enabling AspectJ
+The aspect is applied by *load-time weaving*: the AspectJ weaver runs as a Java agent and
+instruments your classes while the JVM loads them. No special compiler is needed.
+There are two parts to it:
+
+1. The auto-validate jar ships a `META-INF/aop.xml` that registers the `AutoValidateAspect`.
+   The weaver finds this file on the classpath by itself, you don't have to configure anything.
+2. You start the JVM with the weaver as agent:
+   ```
+   java -javaagent:/path/to/aspectjweaver-1.9.25.1.jar -jar your-app.jar
+   ```
+   `aspectjweaver` is a transitive dependency of auto-validate, so the jar is already in your local Maven repository at
+   `~/.m2/repository/org/aspectj/aspectjweaver/<version>/aspectjweaver-<version>.jar`.
+
+Without the agent nothing fails - the annotation is simply ignored and your objects are NOT validated.
+So make sure there's at least one test that expects a ConstraintViolationException.
+
+For tests run by Maven, pass the agent to Surefire. The `properties` goal of the dependency plugin
+provides the path of the weaver jar, so it doesn't have to be hard-coded:
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-dependency-plugin</artifactId>
+    <executions>
+        <execution>
+            <goals>
+                <goal>properties</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <configuration>
+        <argLine>-javaagent:${org.aspectj:aspectjweaver:jar}</argLine>
+    </configuration>
+</plugin>
+```
+In an IDE, add the same `-javaagent:...` option to the VM options of your run configuration.
 
 
-
-
+# Building
+Requires Java 21 or newer and Maven.
+```
+mvn test
+```
+runs the tests of the library (`autovalidate`) and of the Spring Boot example application (`rest-example`).

@@ -3,19 +3,21 @@ package com.acnebs.autovalidate.restexampl.room.rest;
 
 import com.acnebs.autovalidate.restexampl.common.rest.ControllerBase;
 import com.acnebs.autovalidate.restexampl.room.domain.*;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
 import java.util.*;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/rooms")
-@Api
+@Tag(name = "rooms")
 class RoomController extends ControllerBase {
 
     private final RoomService roomService;
@@ -41,11 +43,10 @@ class RoomController extends ControllerBase {
     }
 
     @PutMapping("/{number}")
-    @ApiOperation(value = "Save the sent room.")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "body", dataTypeClass = Room.class, paramType = "body")
-    })
-
+    @Operation(summary = "Save the sent room.")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(schema = @Schema(implementation = Room.class))
+    )
     public HttpEntity<RoomHalResource> putRoom(
             @PathVariable final String number,
             @RequestBody  final String json

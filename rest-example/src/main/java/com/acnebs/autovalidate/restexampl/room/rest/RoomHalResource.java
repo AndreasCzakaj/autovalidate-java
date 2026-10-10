@@ -2,7 +2,7 @@ package com.acnebs.autovalidate.restexampl.room.rest;
 
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 
 /**
  * Class RoomHalResource.
@@ -12,7 +12,7 @@ import org.springframework.hateoas.ResourceSupport;
  * @author acj
  */
 
-class RoomHalResource<T> extends ResourceSupport {
+class RoomHalResource<T> extends RepresentationModel<RoomHalResource<T>> {
 
     private final T payload;
 

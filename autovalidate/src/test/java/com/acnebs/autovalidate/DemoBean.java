@@ -4,7 +4,7 @@ package com.acnebs.autovalidate;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 
 @Getter
 @Setter

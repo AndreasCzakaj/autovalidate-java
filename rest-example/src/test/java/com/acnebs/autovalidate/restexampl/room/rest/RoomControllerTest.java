@@ -3,25 +3,23 @@ package com.acnebs.autovalidate.restexampl.room.rest;
 
 import com.acnebs.autovalidate.restexampl.room.domain.Room;
 import com.acnebs.autovalidate.restexampl.room.repository.RoomRepositoryInMemImpl;
-import com.fasterxml.jackson.databind.*;
-import org.junit.*;
-import org.junit.runner.RunWith;
+import tools.jackson.databind.*;
+import tools.jackson.databind.json.JsonMapper;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.*;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -34,7 +32,7 @@ public class RoomControllerTest {
     @Autowired
     private RoomRepositoryInMemImpl roomRepository;
 
-    @Before
+    @BeforeEach
     public void init() {
         roomRepository.addRoom(
                 Room.builder()
@@ -50,7 +48,7 @@ public class RoomControllerTest {
 
         final ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/rooms"))
                 /*.andDo(print())*/
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 //.andExpect(jsonPath("$.number", is("E.11")))
                 ;
@@ -63,10 +61,9 @@ public class RoomControllerTest {
 
     }
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    static {
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
+    private static final ObjectMapper objectMapper = JsonMapper.builder()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .build();
 
     @Test
     public void putRoom_OK() throws Exception {
@@ -89,7 +86,7 @@ public class RoomControllerTest {
 
         mockMvc.perform(
                     MockMvcRequestBuilders.put("/rooms/E.12")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(room))
                 )
                 .andDo(print())
@@ -125,7 +122,7 @@ public class RoomControllerTest {
 
         mockMvc.perform(
                     MockMvcRequestBuilders.put("/rooms/XXX")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(res.toJson())
                 )
                 .andDo(print())

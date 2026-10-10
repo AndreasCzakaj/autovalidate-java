@@ -1,27 +1,27 @@
 package com.acnebs.autovalidate.restexampl.room.domain;
 
 import com.acnebs.autovalidate.AutoValidate;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.*;
-import io.swagger.annotations.*;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.*;
+import tools.jackson.databind.json.JsonMapper;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import javax.validation.ConstraintViolationException;
-import javax.validation.constraints.*;
-import java.io.IOException;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.constraints.*;
 import java.util.List;
 
 @Getter
 @Builder(toBuilder=true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @AutoValidate
-@ApiModel
+@Schema
 public class Room {
 
     @NotNull
     @Size(min = 1, max = 8)
-    @ApiModelProperty(value = "The room number. Used as a global ID.")
+    @Schema(description = "The room number. Used as a global ID.")
     String number;
 
     @Size(min = 1, max = 256)
@@ -38,15 +38,14 @@ public class Room {
     Integer maximumCapacity;
 
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    static {
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
+    private static final ObjectMapper objectMapper = JsonMapper.builder()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .build();
 
     public String toJson() {
         try {
             return objectMapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }
@@ -54,7 +53,7 @@ public class Room {
     public static Room fromJson(final String json) {
         try {
             return objectMapper.readValue(json, Room.class);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             if (e.getCause() instanceof ConstraintViolationException) {
                 throw (ConstraintViolationException)e.getCause();
             }
@@ -65,7 +64,7 @@ public class Room {
     public static List<Room> listFromJson(final String json) {
         try {
             return objectMapper.readValue(json, new TypeReference<List<Room>>() {});
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }

@@ -4,7 +4,7 @@ package com.acnebs.autovalidate;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
 
-import javax.validation.*;
+import jakarta.validation.*;
 import java.util.Set;
 
 
