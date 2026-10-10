@@ -3,14 +3,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.acnebs</groupId>
+    <groupId>eu.binarystars</groupId>
     <artifactId>auto-validate-build</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
+
+    <properties>
+        <!-- Only the library is published, see the "release" profile in autovalidate/pom.xml -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
 
     <!-- Aggregator only: lets you run "mvn test" from the repository root. -->
     <modules>
         <module>autovalidate</module>
-        <module>rest-example</module>
+        <module>user-self-service-example</module>
     </modules>
 </project>

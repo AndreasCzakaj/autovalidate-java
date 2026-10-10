@@ -1,4 +1,4 @@
-package com.acnebs.autovalidate;
+package eu.binarystars.autovalidate;
 
 
 import jakarta.validation.constraints.*;

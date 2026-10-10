@@ -1,4 +1,4 @@
-package com.acnebs.autovalidate;
+package eu.binarystars.autovalidate;
 
 
 import lombok.*;
@@ -7,11 +7,9 @@ import lombok.experimental.FieldDefaults;
 import jakarta.validation.constraints.*;
 
 @Getter
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Builder(toBuilder=true)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@AutoValidate
-class DemoAutovalidateClass {
+@Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
+class DemoBean {
 
     @Size(min = 1, max = 256)
     String firstName;

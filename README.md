@@ -158,9 +158,11 @@ We still depend on a mechanism outside of the object to call the validate method
 
 
 # Enter AutoValidate
-Here's a solution to both problems that this "auto-validate" library provides:
+Here's a solution to both problems:
 1. An object that is guaranteed to be either valid or non-existent (by throwing an exception).
-2. ... and immutable.
+   This is what the "auto-validate" library provides.
+2. ... and immutable. This part is still the job of the Builder pattern from above:
+   auto-validate checks an object when it is constructed, so it's only a guarantee if the object can't change afterwards.
 ```java
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -225,8 +227,18 @@ but before any other code can use the object.
 If the object is invalid then the Advice throws a jakarta.validation.ConstraintViolationException.
 
 All YOU have to do:
-1. Use the @AutoValidate annotation on each class you want to use this feature for, either on the level of the class or the constructor.
-2. Enable AspectJ (see below).
+1. Add the dependency (requires Java 17 or newer):
+   ```xml
+   <dependency>
+       <groupId>eu.binarystars</groupId>
+       <artifactId>auto-validate</artifactId>
+       <version>1.0.0</version>
+   </dependency>
+   ```
+2. Make sure there's a Jakarta Validation provider on the classpath, e.g. Hibernate Validator.
+   With Spring Boot that's `spring-boot-starter-validation`.
+3. Use the @AutoValidate annotation on each class you want to use this feature for, either on the level of the class or the constructor.
+4. Enable AspectJ (see below).
 
 
 # Enabling AspectJ
@@ -272,8 +284,11 @@ In an IDE, add the same `-javaagent:...` option to the VM options of your run co
 
 
 # Building
-Requires Java 21 or newer and Maven.
+Requires Java 21 or newer and Maven (the library itself is compiled for Java 17, the example application for Java 21).
 ```
 mvn test
 ```
-runs the tests of the library (`autovalidate`) and of the Spring Boot example application (`rest-example`).
+runs the tests of the library (`autovalidate`) and of the Spring Boot example application
+`user-self-service-example`: sign-up, email verification and login. The sign-up input (`RegistrationData`)
+is plain JSON data, but the `Account` is created with an auto-validated builder and "changed" by creating
+validated copies with `toBuilder()`.

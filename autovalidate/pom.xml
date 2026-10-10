@@ -3,14 +3,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.acnebs</groupId>
+    <groupId>eu.binarystars</groupId>
     <artifactId>auto-validate</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
+    <name>auto-validate</name>
+    <description>Self-validating objects for Java: a constructor of a class annotated with @AutoValidate either returns an object that satisfies its Jakarta Validation constraints or throws a ConstraintViolationException.</description>
+    <url>https://github.com/AndreasCzakaj/autovalidate-java</url>
+
     <organization>
-        <name>Andreas Czakaj Network Enabled Business Software</name>
-        <url>http://acnebs.com</url>
+        <name>binary stars GmbH</name>
+        <url>https://binary-stars.eu</url>
     </organization>
 
     <licenses>
@@ -22,6 +26,21 @@
         </license>
     </licenses>
 
+    <developers>
+        <developer>
+            <name>Andreas Czakaj</name>
+            <email>code@binary-stars.eu</email>
+            <organization>binary stars GmbH</organization>
+            <organizationUrl>https://binary-stars.eu</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/AndreasCzakaj/autovalidate-java.git</connection>
+        <developerConnection>scm:git:git@github.com:AndreasCzakaj/autovalidate-java.git</developerConnection>
+        <url>https://github.com/AndreasCzakaj/autovalidate-java</url>
+    </scm>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <aspectj_version>1.9.25.1</aspectj_version>
@@ -30,7 +49,7 @@
         <hibernate-validator_version>9.1.4.Final</hibernate-validator_version>
         <expressly_version>6.0.0</expressly_version>
         <junit_version>6.1.3</junit_version>
-        <java_version>21</java_version>
+        <java_version>17</java_version>
     </properties>
 
     <dependencies>
@@ -39,15 +58,18 @@
             <artifactId>jakarta.validation-api</artifactId>
             <version>${validation-api_version}</version>
         </dependency>
+        <!-- The tests need a Jakarta Validation provider. Applications bring their own. -->
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate-validator_version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.expressly</groupId>
             <artifactId>expressly</artifactId>
             <version>${expressly_version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -120,4 +142,65 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Publishing to Maven Central: mvn -Prelease deploy
+             Needs a GPG key and a Central Portal user token as server "central" in ~/.m2/settings.xml -->
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.4.0</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.12.0</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.8</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.11.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
