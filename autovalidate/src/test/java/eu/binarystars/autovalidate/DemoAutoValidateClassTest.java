@@ -13,7 +13,7 @@ public class DemoAutoValidateClassTest {
     public void test_demo() {
         // DemoBean defines validation rules for its validity.
         // Let's try it.
-        DemoAutovalidateClass demo = DemoAutovalidateClass.builder()  // not done yet
+        final DemoAutovalidateClass demo = DemoAutovalidateClass.builder()  // not done yet
                 .firstName("Joey")                // not done yet
                 .lastName("Ramone")               // not done yet
                 .email("joey@ramones.com")        // not done yet
@@ -26,16 +26,15 @@ public class DemoAutoValidateClassTest {
 
         // Fortunately, making it INVALID again is no possible...
         // let's "clone" it instead:
-        try {
-            final DemoAutovalidateClass demo2 = demo.toBuilder()
-                    .email("joey_at_ramones.com")
-                    .build();
-            fail("This should have failed because the object is not valid");
-        }
-        catch (ConstraintViolationException e) {
-            final Set<ConstraintViolation<?>> violations2 = e.getConstraintViolations();
-            assertEquals(1, violations2.size(), "Object should have 1 error because the email address is wrong.");
-        }
+        final ConstraintViolationException e = assertThrows(
+                ConstraintViolationException.class,
+                () -> demo.toBuilder()
+                        .email("joey_at_ramones.com")
+                        .build(),
+                "This should have failed because the object is not valid"
+        );
+        final Set<ConstraintViolation<?>> violations2 = e.getConstraintViolations();
+        assertEquals(1, violations2.size(), "Object should have 1 error because the email address is wrong.");
 
         // At not point in the process has the object been available in an invalid state.
         // I.e. it can be trusted anywhere it is used.

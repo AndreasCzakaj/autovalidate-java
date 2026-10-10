@@ -81,7 +81,7 @@ Let's create the first valid version:
 demo.setEmail("joey@ramones.com");  // de-facto valid...
 ```
 At this point the object is de-facto valid but this fact has not been checked yet.
-For this to be done some code OUTSIDE of the object needs to be executed, e.g.:
+For this to be done some code OUTSIDE the object needs to be executed, e.g.:
 ```java
 ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
 Validator validator = validatorFactory.getValidator();
@@ -89,7 +89,7 @@ Set<ConstraintViolation<DemoBean>> violations = validator.validate(demo);
 assertEquals(0, violations.size(), "Object should be valid.");
 ```
 
-This means the poor object may declare rules of its validity as much as it wants - but it has no control over it.
+This means the poor class may declare validation rules as much as it wants - but the object has no control over its own validity.
 
 But it gets worse: Now that the object is in a valid state at last, let's break it again:
 ```java
@@ -99,7 +99,7 @@ assertEquals(1, violations.size(), "Object should have 1 error because the email
 ```
 Oops, a simple, maybe accidental, call of a setter broke the object's validity and no-one ever noticed,
 neither the code that asserted the object's validity a second ago nor the object itself.
-In order to find out we had to call the validate method again.
+In order to find out, we had to call the validate method again.
 
 
 # Some remedy: Builders
@@ -127,7 +127,7 @@ class DemoBuilder {
 
 Now there are no more setters and each field is final.
 This baby is immutable now.
-In order to change a value we would need to "clone" it first.
+In order to change a value, we would need to "clone" it first.
 To achieve this, we can use the toBuilder method that Lombok generated for us (@Builder(toBuilder=true)).
 ```java
 final DemoBuilder demo2 = demo.toBuilder()
@@ -154,7 +154,7 @@ DemoBuilder demo = DemoBuilder.builder()        // not done yet
 At this point the object is INVALID because the email address is broken.
 However, the object doesn't know that it's broken.
 Any code that uses the object does not know the object is broken and consists of invalid data.
-We still depend on a mechanism outside of the object to call the validate method.
+We still depend on a mechanism outside the object to call the validate method.
 
 
 # Enter AutoValidate
@@ -200,18 +200,16 @@ public void test_demo() {
 
     // Fortunately, making it INVALID again is not possible...
     // Let's "clone" it instead (using the toBuilder method provided by Lombok):
-    try {
-        DemoAutovalidateClass demo2 = demo.toBuilder()
-                .email("joey_at_ramones.com")
-                .build();
-        fail("This should have failed because the object is not valid");
-        // also: the variable demo2 was never assigned any value. 
-        // The data was broken, so it never existed,
-    }
-    catch (ConstraintViolationException e) {
-        Set<ConstraintViolation<?>> violations = e.getConstraintViolations();
-        assertEquals(1, violations.size(), "Object should have 1 error because the email address is wrong.");
-    }
+    ConstraintViolationException e = assertThrows(
+            ConstraintViolationException.class,
+            () -> demo.toBuilder()
+                    .email("joey_at_ramones.com")
+                    .build(),
+            "This should have failed because the object is not valid"
+    );
+    // The data was broken, so the copy never existed.
+    Set<ConstraintViolation<?>> violations = e.getConstraintViolations();
+    assertEquals(1, violations.size(), "Object should have 1 error because the email address is wrong.");
 
     // At no point in the process has the object been available in an invalid state.
     // This means, if it exists it must be valid and can be trusted anywhere it is used.
@@ -224,7 +222,7 @@ IN THE BACKGROUND, there's an AspectJ Pointcut for every constructor of a class 
 (Alternatively, you can annotate a specific constructor with the same annotation.)
 For this Pointcut there's an AOP Advice that calls jakarta.validation for you right after the constructor has finished
 but before any other code can use the object.
-If the object is invalid then the Advice throws a jakarta.validation.ConstraintViolationException.
+If the object is invalid, then the Advice throws a jakarta.validation.ConstraintViolationException.
 
 All YOU have to do:
 1. Add the dependency (requires Java 17 or newer):
